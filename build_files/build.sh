@@ -23,7 +23,7 @@ log() { echo "=== $* ==="; }
 # VERSIONS — pin these to avoid surprises; bump to update
 ###############################################################################
 CAELESTIA_SHELL_VERSION="v1.4.2"
-CAELESTIA_CLI_VERSION="v1.3.0"
+CAELESTIA_CLI_VERSION="v1.0.5"
 CAVA_VERSION="0.10.6"           # LukashonakV/cava release tag
 APP2UNIT_VERSION="v1.7.1"       # Vladimir-csp/app2unit release tag
 # Nerd Fonts release (used for CaskaydiaCove NF)
