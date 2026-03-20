@@ -219,6 +219,7 @@ cd "${CLI_SRC}"
 
 # Build a wheel and install it system-wide
 python3 -m build --wheel --no-isolation
+mkdir -p /usr/local/bin
 python3 -m installer --destdir=/ dist/*.whl
 
 # Fish completions
