@@ -24,7 +24,7 @@ log() { echo "=== $* ==="; }
 ###############################################################################
 CAELESTIA_SHELL_VERSION="v1.4.2"
 CAELESTIA_CLI_VERSION="v1.3.0"
-CAVA_VERSION="0.10.4"           # LukashonakV/cava release tag
+CAVA_VERSION="0.10.6"           # LukashonakV/cava release tag
 APP2UNIT_VERSION="v1.7.1"       # Vladimir-csp/app2unit release tag
 # Nerd Fonts release (used for CaskaydiaCove NF)
 NERD_FONTS_VERSION="v3.3.0"
@@ -159,8 +159,8 @@ cd /tmp
 tar xf "${CAVA_TARBALL}"
 cd "cava-${CAVA_VERSION}"
 
-meson setup build --prefix=/usr --buildtype=release
-meson compile -C build -j"$(nproc)"
+CC=gcc CXX=g++ meson setup build --prefix=/usr --buildtype=release
+CC=gcc CXX=g++ meson compile -C build -j"$(nproc)"
 meson install -C build
 
 ldconfig
@@ -185,6 +185,8 @@ cd "${SHELL_SRC}"
 cmake -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_C_COMPILER=gcc \
+    -DCMAKE_CXX_COMPILER=g++ \
     -DINSTALL_QSCONFDIR=/usr/share/quickshell/caelestia
 
 cmake --build build -j"$(nproc)"
