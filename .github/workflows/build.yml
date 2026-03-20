@@ -69,7 +69,7 @@ jobs:
       - name: Verify caelestia-shell binary exists in image
         run: |
           podman run --rm ${{ steps.build.outputs.image-with-tag }} \
-            sh -c 'command -v qs && find / -name shell.qml 2>/dev/null || echo "shell.qml not found anywhere"'
+            sh -c 'command -v qs && test -f /usr/share/quickshell/caelestia/shell.qml && test -L /etc/xdg/quickshell/caelestia'
 
       # ── Push (main branch only) ─────────────────────────────────────────────
       - name: Log in to GHCR

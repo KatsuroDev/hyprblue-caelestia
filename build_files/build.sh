@@ -198,10 +198,15 @@ cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_C_COMPILER=gcc \
     -DCMAKE_CXX_COMPILER=g++ \
-    -DINSTALL_QSCONFDIR=/etc/xdg/quickshell
+    -DINSTALL_QSCONFDIR=/usr/share/quickshell/caelestia
 
 cmake --build build -j"$(nproc)"
 cmake --install build
+
+# qs -c caelestia searches XDG config paths for a subdir named "caelestia".
+# Symlink the installed config into /etc/xdg/quickshell/ so it's found system-wide.
+mkdir -p /etc/xdg/quickshell
+ln -sf /usr/share/quickshell/caelestia /etc/xdg/quickshell/caelestia
 
 cd /tmp
 rm -rf "${SHELL_SRC}"
