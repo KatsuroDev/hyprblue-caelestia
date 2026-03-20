@@ -25,7 +25,7 @@ log() { echo "=== $* ==="; }
 CAELESTIA_SHELL_VERSION="v1.4.2"
 CAELESTIA_CLI_VERSION="v1.0.5"
 CAVA_VERSION="0.10.6"           # LukashonakV/cava release tag
-APP2UNIT_VERSION="v1.7.1"       # Vladimir-csp/app2unit release tag
+APP2UNIT_VERSION=""       # unused, cloning master directly
 # Nerd Fonts release (used for CaskaydiaCove NF)
 NERD_FONTS_VERSION="v3.3.0"
 # Material Symbols font from google-fonts tree (commit-pinned tarball not practical;
@@ -231,9 +231,9 @@ rm -rf "${CLI_SRC}"
 ###############################################################################
 # INSTALL APP2UNIT
 ###############################################################################
-log "Installing app2unit ${APP2UNIT_VERSION}..."
+log "Installing app2unit (latest master)..."
 
-git clone --depth=1 --branch "${APP2UNIT_VERSION}" \
+git clone --depth=1 \
     https://github.com/Vladimir-csp/app2unit.git /tmp/app2unit-src
 
 cd /tmp/app2unit-src
