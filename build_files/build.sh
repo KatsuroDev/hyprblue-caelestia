@@ -198,7 +198,7 @@ cmake -B build -G Ninja \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_C_COMPILER=gcc \
     -DCMAKE_CXX_COMPILER=g++ \
-    -DINSTALL_QSCONFDIR=/usr/share/quickshell/caelestia
+    -DINSTALL_QSCONFDIR=/etc/xdg/quickshell
 
 cmake --build build -j"$(nproc)"
 cmake --install build
@@ -270,6 +270,95 @@ rm -f CascadiaCode.zip
 
 # Regenerate font cache
 fc-cache -f "${FONT_DIR}"
+
+###############################################################################
+# DEFAULT CONFIG FILES
+###############################################################################
+# Ship minimal working configs so users don't need to create them manually.
+# These land in /etc/skel so they're copied to new user home directories,
+# and can also be copied manually: cp -r /etc/skel/.config ~/
+
+install -d /etc/skel/.config/hypr
+cat > /etc/skel/.config/hypr/hyprland.conf <<'EOF'
+# caelestia-bluefin default hyprland config
+# See https://wiki.hyprland.org/Configuring/
+
+exec-once = caelestia shell -d
+
+input {
+    kb_layout = us
+    follow_mouse = 1
+    touchpad {
+        natural_scroll = true
+    }
+}
+
+general {
+    gaps_in = 5
+    gaps_out = 10
+    border_size = 2
+    col.active_border = rgba(33ccffee)
+    col.inactive_border = rgba(595959aa)
+    layout = dwindle
+}
+
+decoration {
+    rounding = 10
+    blur {
+        enabled = true
+        size = 3
+        passes = 1
+    }
+}
+
+animations {
+    enabled = true
+}
+
+dwindle {
+    pseudotile = true
+    preserve_split = true
+}
+
+# Keybinds — all shell interactions go via caelestia global shortcuts
+$mod = SUPER
+bind = $mod, return, exec, foot
+bind = $mod, Q, killactive
+bind = $mod, M, exit
+bind = $mod, V, togglefloating
+bind = $mod, 1, workspace, 1
+bind = $mod, 2, workspace, 2
+bind = $mod, 3, workspace, 3
+bind = $mod, 4, workspace, 4
+bind = $mod, 5, workspace, 5
+bind = $mod SHIFT, 1, movetoworkspace, 1
+bind = $mod SHIFT, 2, movetoworkspace, 2
+bind = $mod SHIFT, 3, movetoworkspace, 3
+bind = $mod SHIFT, 4, movetoworkspace, 4
+bind = $mod SHIFT, 5, movetoworkspace, 5
+
+# Mouse
+bindm = $mod, mouse:272, movewindow
+bindm = $mod, mouse:273, resizewindow
+EOF
+
+install -d /etc/skel/.config/caelestia
+cat > /etc/skel/.config/caelestia/shell.json <<'EOF'
+{
+    "general": {
+        "apps": {
+            "terminal": ["foot"],
+            "audio": ["pavucontrol"],
+            "explorer": ["nautilus"]
+        }
+    },
+    "paths": {
+        "wallpaperDir": "~/Pictures/Wallpapers"
+    }
+}
+EOF
+
+install -d /etc/skel/Pictures/Wallpapers
 
 ###############################################################################
 # DISABLE COPR REPOS (keep final image clean)
