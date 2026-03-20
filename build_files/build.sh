@@ -170,6 +170,10 @@ CC=gcc CXX=g++ meson setup build --prefix=/usr --buildtype=release
 CC=gcc CXX=g++ meson compile -C build -j"$(nproc)"
 meson install -C build
 
+# meson installs the pkg-config file as 'cava.pc' but caelestia-shell's
+# CMake looks for 'libcava' — create a symlink to satisfy it
+ln -sf /usr/lib64/pkgconfig/cava.pc /usr/lib64/pkgconfig/libcava.pc
+
 ldconfig
 
 cd /tmp
