@@ -60,8 +60,7 @@ HYPR_PKGS=(
     hyprcursor
     xdg-desktop-portal-hyprland
     xdg-desktop-portal-gtk
-    # polkit agent (Gnome's, already present in bluefin but listed for clarity)
-    polkit-gnome
+    # polkit: bluefin-dx already ships a working GNOME polkit agent
 )
 
 # quickshell — git version required by caelestia-shell
