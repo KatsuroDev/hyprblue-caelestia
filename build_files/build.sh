@@ -195,7 +195,8 @@ cd "${SHELL_SRC}"
 # (the default Quickshell config search path).
 cmake -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/ \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_INSTALL_LIBDIR=lib64 \
     -DCMAKE_C_COMPILER=gcc \
     -DCMAKE_CXX_COMPILER=g++ \
     -DINSTALL_QSCONFDIR=/usr/share/quickshell/caelestia
