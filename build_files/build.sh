@@ -236,10 +236,16 @@ log "Installing app2unit (latest master)..."
 git clone --depth=1 \
     https://github.com/Vladimir-csp/app2unit.git /tmp/app2unit-src
 
-cd /tmp/app2unit-src
-make PREFIX=/usr install
+# The Makefile defaults to /usr/local which is a broken symlink in bootc images.
+# Install scripts directly to /usr/bin instead.
+install -Dpm755 /tmp/app2unit-src/app2unit -t /usr/bin
+install -Dpm755 /tmp/app2unit-src/app2unit-open -t /usr/bin
+install -Dpm755 /tmp/app2unit-src/app2unit-open-scope -t /usr/bin
+install -Dpm755 /tmp/app2unit-src/app2unit-open-service -t /usr/bin
+install -Dpm755 /tmp/app2unit-src/app2unit-term -t /usr/bin
+install -Dpm755 /tmp/app2unit-src/app2unit-term-scope -t /usr/bin
+install -Dpm755 /tmp/app2unit-src/app2unit-term-service -t /usr/bin
 
-cd /tmp
 rm -rf /tmp/app2unit-src
 
 ###############################################################################
