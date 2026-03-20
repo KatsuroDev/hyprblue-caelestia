@@ -195,8 +195,7 @@ cd "${SHELL_SRC}"
 # (the default Quickshell config search path).
 cmake -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr \
-    -DCMAKE_INSTALL_LIBDIR=lib64 \
+    -DCMAKE_INSTALL_PREFIX=/ \
     -DCMAKE_C_COMPILER=gcc \
     -DCMAKE_CXX_COMPILER=g++ \
     -DINSTALL_QSCONFDIR=/usr/share/quickshell/caelestia
@@ -204,8 +203,12 @@ cmake -B build -G Ninja \
 cmake --build build -j"$(nproc)"
 cmake --install build
 
-# qs -c caelestia searches XDG config paths for a subdir named "caelestia".
-# Symlink the installed config into /etc/xdg/quickshell/ so it's found system-wide.
+# The plugin lands in /usr/lib/qt6/qml/Caelestia but Fedora's Qt6 searches
+# /usr/lib64/qt6/qml/ — symlink so both paths work
+mkdir -p /usr/lib64/qt6/qml
+ln -sf /usr/lib/qt6/qml/Caelestia /usr/lib64/qt6/qml/Caelestia
+
+# XDG symlink so 'qs -c caelestia' finds the config
 mkdir -p /etc/xdg/quickshell
 ln -sf /usr/share/quickshell/caelestia /etc/xdg/quickshell/caelestia
 
