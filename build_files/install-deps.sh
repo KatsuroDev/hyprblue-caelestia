@@ -14,6 +14,8 @@ dnf5 install --setopt=install_weak_deps=False -y \
     cliphist \
     app2unit \
     wireplumber \
+    pipewire \
+    pipewire-devel \
     brightnessctl \
     ddcutil \
     lm_sensors \
@@ -22,22 +24,31 @@ dnf5 install --setopt=install_weak_deps=False -y \
     libqalculate \
     libqalculate-devel \
     qalculate \
-    cava \
     NetworkManager \
     libnotify \
     foot \
     fuzzel \
     grim \
     slurp \
+    inotify-tools \
+    trash-cli \
+    jq \
+    eza \
     quickshell-git \
     cmake \
     ninja-build \
     git \
     curl \
     unzip \
+    tar \
     gcc-c++ \
     make \
+    autoconf \
+    automake \
+    libtool \
     pkgconf-pkg-config \
+    fftw-devel \
+    iniparser-devel \
     qt6-qtbase-devel \
     qt6-qtdeclarative-devel \
     aubio-devel \

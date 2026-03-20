@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: ghcr.io/KatsuroDev/bluefin-dx-caelestia
+  IMAGE_NAME: ghcr.io/YOUR_GITHUB_USERNAME/bluefin-dx-caelestia
 
 jobs:
   build:

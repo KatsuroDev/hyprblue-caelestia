@@ -11,6 +11,16 @@ This image is built from `ghcr.io/ublue-os/bluefin-dx:stable` and installs:
 - only the core runtime packages needed for the shell and CLI to work
 - a minimal Hyprland config that autostarts `caelestia shell -d`
 
+## What this image intentionally does not include
+
+This repo avoids bundling extra desktop apps from larger Hyprland images such as:
+
+- Chrome
+- 1Password
+- full “rice” bundles
+- Waybar / Hyprpanel / Mako
+- extra theming packages not required by Caelestia Shell itself
+
 ## What is included
 
 ### Core session packages
@@ -64,7 +74,31 @@ This image is built from `ghcr.io/ublue-os/bluefin-dx:stable` and installs:
 
 `caelestia-cli`'s `record` subcommand expects `gpu-screen-recorder`, which is not installed by default in this repo because Fedora packaging for it is less straightforward and can vary. Everything else needed for the shell and the main CLI utilities is included.
 
+Also, Fedora's regular `cava` package typically does **not** expose the `pkg-config` module that Caelestia Shell's CMake build checks for, so this repo now builds and installs **libcava** from source during the image build.
+
 If you want that too, uncomment the optional section in `build_files/install-deps.sh`.
+
+## Repo layout
+
+- `Containerfile` — image definition
+- `build_files/` — install scripts
+- `system_files/` — files copied into the image
+- `.github/workflows/build.yml` — builds and pushes to GHCR
+
+## Before first push
+
+### 1. Create your repo from these files
+Push this repo to GitHub.
+
+### 2. Set the image name
+Edit these in:
+- `Containerfile`
+- `.github/workflows/build.yml`
+
+Search for:
+- `ghcr.io/YOUR_GITHUB_USERNAME/bluefin-dx-caelestia`
+
+Replace with your real GHCR path.
 
 ### 3. Optional: enable Cosign signing
 This workflow will build and push without signing.
@@ -87,10 +121,10 @@ On push to `main`, GitHub Actions will:
 
 ## Rebasing onto the image
 
-You can rebase a Bluefin installation onto it with something like:
+Once pushed, you can rebase a Bluefin installation onto it with something like:
 
 ```bash
-sudo bootc switch ghcr.io/KatsuroDev/bluefin-dx-caelestia:latest
+sudo bootc switch ghcr.io/YOUR_GITHUB_USERNAME/bluefin-dx-caelestia:latest
 sudo systemctl reboot
 ```
 
@@ -119,3 +153,5 @@ Default build args:
 - `CAELESTIA_SHELL_REF=v1.5.1`
 - `CAELESTIA_CLI_REF=v1.0.6`
 - `DART_SASS_VERSION=1.98.0`
+
+You can change those in `Containerfile`.
