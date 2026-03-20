@@ -1,157 +1,100 @@
-# bluefin-dx-caelestia
+# caelestia-bluefin
 
-A ready-to-push custom Universal Blue image repo for a **minimal Hyprland + Caelestia Shell** setup on top of **Bluefin DX**.
+A minimal [bootc](https://github.com/bootc-dev/bootc) image based on
+[`bluefin-dx`](https://github.com/ublue-os/bluefin) that ships
+[caelestia-shell](https://github.com/caelestia-dots/shell) (the Quickshell-based
+desktop shell) along with Hyprland and the exact runtime packages it needs — nothing
+more.
 
-This image is built from `ghcr.io/ublue-os/bluefin-dx:stable` and installs:
+## What's included
 
-- Hyprland
-- Quickshell (`quickshell-git` from COPR)
-- Caelestia Shell
-- Caelestia CLI
-- only the core runtime packages needed for the shell and CLI to work
-- a minimal Hyprland config that autostarts `caelestia shell -d`
+| Component | Source | Notes |
+|---|---|---|
+| **caelestia-shell** | Built from source | Pinned to a release tag |
+| **caelestia-cli** | Built from Python wheel | Full IPC + wallpaper/scheme control |
+| **quickshell-git** | `errornointernet/quickshell` COPR | Required by caelestia-shell |
+| **Hyprland stack** | `solopasha/hyprland` COPR | hyprland, hypridle, hyprlock, hyprpaper |
+| **cava** | Built from source | Provides `libcava` which Fedora's package omits |
+| **app2unit** | Downloaded from GitHub | Launches apps as systemd units |
+| **Material Symbols Rounded** | Google Fonts | Required font for the shell UI |
+| **CaskaydiaCove Nerd Font** | Nerd Fonts releases | Monospace font for the shell |
 
-## What this image intentionally does not include
+## What's NOT included
 
-This repo avoids bundling extra desktop apps from larger Hyprland images such as:
+- 1Password, Google Chrome, or any proprietary app
+- Niri, Waybar, hyprpanel, or other alternative shell components
+- Any theming/dotfiles beyond the shell itself
 
-- Chrome
-- 1Password
-- full “rice” bundles
-- Waybar / Hyprpanel / Mako
-- extra theming packages not required by Caelestia Shell itself
+## How to use
 
-## What is included
-
-### Core session packages
-- `hyprland`
-- `xdg-desktop-portal-hyprland`
-- `xdg-desktop-portal-gtk`
-- `hyprpicker`
-- `wl-clipboard`
-- `cliphist`
-- `app2unit`
-- `wireplumber`
-- `foot`
-- `fuzzel`
-- `grim`
-- `slurp`
-
-### Shell runtime packages
-- `brightnessctl`
-- `ddcutil`
-- `lm_sensors`
-- `fish`
-- `swappy`
-- `libqalculate`
-- `cava`
-- `NetworkManager`
-- `libnotify`
-- `quickshell-git`
-
-### Build/install dependencies
-- `cmake`
-- `ninja-build`
-- `git`
-- `gcc-c++`
-- `qt6-qtbase-devel`
-- `qt6-qtdeclarative-devel`
-- `aubio-devel`
-- `libqalculate-devel`
-- `python3-build`
-- `python3-installer`
-- `python3-hatchling`
-- `python3-hatch-vcs`
-- `python3-pip`
-- `python3-pillow`
-
-### Fonts and assets
-- exact **Material Symbols Rounded**
-- exact **Caskaydia Cove Nerd Font**
-- **Dart Sass** binary for CLI theming support
-
-## Known limitation
-
-`caelestia-cli`'s `record` subcommand expects `gpu-screen-recorder`, which is not installed by default in this repo because Fedora packaging for it is less straightforward and can vary. Everything else needed for the shell and the main CLI utilities is included.
-
-Also, Fedora's regular `cava` package typically does **not** expose the `pkg-config` module that Caelestia Shell's CMake build checks for, so this repo now builds and installs **libcava** from source during the image build.
-
-If you want that too, uncomment the optional section in `build_files/install-deps.sh`.
-
-## Repo layout
-
-- `Containerfile` — image definition
-- `build_files/` — install scripts
-- `system_files/` — files copied into the image
-- `.github/workflows/build.yml` — builds and pushes to GHCR
-
-## Before first push
-
-### 1. Create your repo from these files
-Push this repo to GitHub.
-
-### 2. Set the image name
-Edit these in:
-- `Containerfile`
-- `.github/workflows/build.yml`
-
-Search for:
-- `ghcr.io/YOUR_GITHUB_USERNAME/bluefin-dx-caelestia`
-
-Replace with your real GHCR path.
-
-### 3. Optional: enable Cosign signing
-This workflow will build and push without signing.
-If you want signed images, add a signing step or migrate to the upstream Universal Blue image template workflow.
-
-### 4. Enable GitHub Actions
-In your GitHub repo:
-- open **Actions**
-- enable workflows
-
-## Build behavior
-
-On push to `main`, GitHub Actions will:
-
-1. build the image
-2. push it to GHCR
-3. tag it as:
-   - `latest`
-   - `sha-<commit>`
-
-## Rebasing onto the image
-
-Once pushed, you can rebase a Bluefin installation onto it with something like:
+### Switch to this image
 
 ```bash
-sudo bootc switch ghcr.io/YOUR_GITHUB_USERNAME/bluefin-dx-caelestia:latest
-sudo systemctl reboot
+sudo bootc switch ghcr.io/<your-username>/caelestia-bluefin:latest
 ```
 
-## Session notes
+Reboot, then log in to your normal GNOME session first.
 
-This repo drops a minimal user Hyprland config into `/etc/skel/.config/hypr/hyprland.conf`.
+### Configure Hyprland to start the shell
 
-For **new users**, that becomes the default config.
-For **existing users**, copy it manually if needed:
+Add to your Hyprland config (`~/.config/hypr/hyprland.conf`):
 
-```bash
-mkdir -p ~/.config/hypr
-cp /etc/skel/.config/hypr/hyprland.conf ~/.config/hypr/hyprland.conf
 ```
-
-The config autostarts:
-
-```ini
 exec-once = caelestia shell -d
 ```
 
-## Version pins
+Or launch manually:
 
-Default build args:
+```bash
+qs -c caelestia
+```
 
-- `CAELESTIA_SHELL_REF=v1.5.1`
-- `CAELESTIA_CLI_REF=v1.0.6`
-- `DART_SASS_VERSION=1.98.0`
+### Start Hyprland
 
-You can change those in `Containerfile`.
+From a TTY or via UWSM:
+
+```bash
+uwsm start hyprland
+```
+
+### Post-install configuration
+
+The shell reads `~/.config/caelestia/shell.json` — create it from the
+[example in the upstream README](https://github.com/caelestia-dots/shell#example-configuration).
+
+Wallpapers are read from `~/Pictures/Wallpapers` by default.
+
+## Pinned versions
+
+Edit `build_files/build.sh` to bump any of these:
+
+```bash
+CAELESTIA_SHELL_VERSION="v1.4.2"
+CAELESTIA_CLI_VERSION="v1.3.0"
+CAVA_VERSION="0.10.4"
+APP2UNIT_VERSION="v1.7.1"
+NERD_FONTS_VERSION="v3.3.0"
+```
+
+## Building locally
+
+```bash
+podman build --network=host -t caelestia-bluefin:local .
+```
+
+## Troubleshooting
+
+**Screen flickering?**  
+Add to `~/.config/caelestia/hypr-user.conf`:
+```
+misc { vrr = 0 }
+```
+
+**Shell not launching?**  
+Check that `qs` is in your PATH and `quickshell-git` is installed:
+```bash
+qs --version
+```
+
+**Wallpapers not showing in launcher?**  
+Put images in `~/Pictures/Wallpapers` — at least 3 (the launcher shows an odd count).
