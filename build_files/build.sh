@@ -122,6 +122,13 @@ BUILD_DEPS=(
     alsa-lib-devel
     pulseaudio-libs-devel
     pipewire-devel
+    # caelestia-shell build deps
+    qt6-qtbase-devel
+    qt6-qtdeclarative-devel
+    qt6-qtbase-private-devel
+    libdrm-devel
+    wayland-devel
+    wayland-protocols-devel
     # aubio (beat detector)
     aubio-devel
     # caelestia-cli (Python build)
