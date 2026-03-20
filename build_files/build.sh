@@ -231,21 +231,16 @@ rm -rf "${CLI_SRC}"
 ###############################################################################
 # INSTALL APP2UNIT
 ###############################################################################
-# app2unit opens GUI apps as transient systemd units — required by caelestia-shell
-# when launching applications from the launcher.
 log "Installing app2unit ${APP2UNIT_VERSION}..."
 
-APP2UNIT_URL="https://github.com/Vladimir-csp/app2unit/archive/refs/tags/${APP2UNIT_VERSION}.tar.gz"
-curl -fsSL "${APP2UNIT_URL}" -o /tmp/app2unit.tar.gz
-cd /tmp
-tar xf app2unit.tar.gz
-cd "app2unit-${APP2UNIT_VERSION#v}"
+git clone --depth=1 --branch "${APP2UNIT_VERSION}" \
+    https://github.com/Vladimir-csp/app2unit.git /tmp/app2unit-src
 
-# app2unit is a POSIX shell script with a Makefile
+cd /tmp/app2unit-src
 make PREFIX=/usr install
 
 cd /tmp
-rm -rf "app2unit-${APP2UNIT_VERSION#v}" app2unit.tar.gz
+rm -rf /tmp/app2unit-src
 
 ###############################################################################
 # INSTALL FONTS
