@@ -219,8 +219,7 @@ cd "${CLI_SRC}"
 
 # Build a wheel and install it system-wide
 python3 -m build --wheel --no-isolation
-mkdir -p /usr/local/bin
-python3 -m installer --destdir=/ dist/*.whl
+python3 -m installer --prefix /usr dist/*.whl
 
 # Fish completions
 install -Dm644 completions/caelestia.fish \
