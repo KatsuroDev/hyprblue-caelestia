@@ -169,6 +169,36 @@ autoreconf --install
 ./configure --prefix=/usr --enable-shared
 make -j"$(nproc)"
 make install
+
+# The autotools build only installs the CLI binary, not the shared library.
+# caelestia-shell's CMake build needs libcava + a pkg-config file.
+# Replicate what the AUR libcava PKGBUILD does: compile cavacore.c as a
+# shared library and write the .pc file manually.
+CAVA_INCDIR="/usr/include"
+CAVA_LIBDIR="/usr/lib64"
+CAVA_PCDIR="${CAVA_LIBDIR}/pkgconfig"
+
+gcc -shared -fPIC -O2 -o "${CAVA_LIBDIR}/libcava.so" \
+    src/cavacore.c \
+    -I. -I./include \
+    -lpipewire-0.3 -lpulse -lpulse-simple -lasound -lportaudio -lfftw3 -lm
+
+install -Dm644 src/cavacore.h "${CAVA_INCDIR}/cavacore.h"
+
+mkdir -p "${CAVA_PCDIR}"
+cat > "${CAVA_PCDIR}/libcava.pc" <<EOF
+prefix=/usr
+exec_prefix=\${prefix}
+libdir=${CAVA_LIBDIR}
+includedir=${CAVA_INCDIR}
+
+Name: libcava
+Description: Audio visualizer core library
+Version: ${CAVA_VERSION}
+Libs: -L\${libdir} -lcava
+Cflags: -I\${includedir}
+EOF
+
 ldconfig
 
 cd /tmp
