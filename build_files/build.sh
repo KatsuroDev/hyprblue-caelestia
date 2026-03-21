@@ -135,7 +135,7 @@ dnf5 install --setopt=install_weak_deps=False --skip-unavailable -y \
 HOME=/tmp npm install -g sass --prefix /usr --cache /tmp/npm-cache
 
 # starship prompt — not in Fedora standard repos, install from release binary
-curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
+curl -fsSL https://starship.rs/install.sh | sh -s -- --yes --bin-dir /usr/bin
 
 # eza (modern ls replacement) — not in Fedora standard repos, install from release
 EZA_VERSION=$(curl -fsSL https://api.github.com/repos/eza-community/eza/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
