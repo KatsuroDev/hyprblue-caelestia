@@ -42,7 +42,7 @@ HYPR_PKGS=(
     hyprcursor
     hyprpicker
     hyprsunset
-    hyprland-qt-support
+    # hyprland-qt-support omitted — built against Qt 6.9, conflicts with Qt 6.10 in bluefin-dx
     xdg-desktop-portal-hyprland
     xdg-desktop-portal-gtk
     uwsm
