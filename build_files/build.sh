@@ -76,8 +76,6 @@ CAELESTIA_RUNTIME=(
     lm_sensors
     foot
     fish
-    starship
-    eza
     qalculate
     libqalculate
     inotify-tools
@@ -127,7 +125,7 @@ BUILD_DEPS=(
     python3-pip
 )
 
-dnf5 install --setopt=install_weak_deps=False -y \
+dnf5 install --setopt=install_weak_deps=False --skip-unavailable -y \
     "${HYPR_PKGS[@]}" \
     "${QS_PKGS[@]}" \
     "${CAELESTIA_RUNTIME[@]}" \
@@ -135,6 +133,16 @@ dnf5 install --setopt=install_weak_deps=False -y \
 
 # dart-sass via npm (needed by caelestia-cli for Discord theming)
 npm install -g sass
+
+# starship prompt — not in Fedora standard repos, install from release binary
+curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
+
+# eza (modern ls replacement) — not in Fedora standard repos, install from release
+EZA_VERSION=$(curl -fsSL https://api.github.com/repos/eza-community/eza/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+curl -fsSL "https://github.com/eza-community/eza/releases/download/${EZA_VERSION}/eza_x86_64-unknown-linux-gnu.tar.gz" \
+    -o /tmp/eza.tar.gz
+tar xf /tmp/eza.tar.gz -C /usr/bin eza
+rm -f /tmp/eza.tar.gz
 
 ###############################################################################
 # BUILD CAVA (provides libcava + pkg-config)
