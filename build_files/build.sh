@@ -137,12 +137,14 @@ HOME=/tmp npm install -g sass --prefix /usr --cache /tmp/npm-cache
 # starship prompt — not in Fedora standard repos, install from release binary
 curl -fsSL https://starship.rs/install.sh | sh -s -- --yes --bin-dir /usr/bin
 
-# eza (modern ls replacement) — not in Fedora standard repos, install from release
+# eza (modern ls replacement)
 EZA_VERSION=$(curl -fsSL https://api.github.com/repos/eza-community/eza/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
 curl -fsSL "https://github.com/eza-community/eza/releases/download/${EZA_VERSION}/eza_x86_64-unknown-linux-gnu.tar.gz" \
     -o /tmp/eza.tar.gz
-tar xf /tmp/eza.tar.gz -C /usr/bin eza
-rm -f /tmp/eza.tar.gz
+mkdir -p /tmp/eza-extract
+tar xf /tmp/eza.tar.gz -C /tmp/eza-extract
+find /tmp/eza-extract -name "eza" -type f -exec install -Dm755 {} /usr/bin/eza \;
+rm -rf /tmp/eza.tar.gz /tmp/eza-extract
 
 ###############################################################################
 # BUILD CAVA (provides libcava + pkg-config)
