@@ -66,13 +66,15 @@ jobs:
             --network=host
 
       # ── Smoke test ──────────────────────────────────────────────────────────
-      - name: Verify caelestia-shell binary exists in image
+      - name: Verify image contents
         run: |
           podman run --rm ${{ steps.build.outputs.image-with-tag }} \
             sh -c 'command -v qs \
+              && command -v caelestia \
+              && command -v hyprland \
+              && command -v uwsm \
               && test -f /usr/share/quickshell/caelestia/shell.qml \
-              && test -L /etc/xdg/quickshell/caelestia \
-              && test -e /usr/lib64/qt6/qml/Caelestia/libcaelestiaplugin.so'
+              && test -e /usr/lib/qt6/qml/Caelestia/libcaelestiaplugin.so'
 
       # ── Push (main branch only) ─────────────────────────────────────────────
       - name: Log in to GHCR
