@@ -41,6 +41,8 @@ HYPR_PKGS=(
     hyprpaper
     hyprcursor
     hyprpicker
+    hyprsunset
+    hyprland-qt-support
     xdg-desktop-portal-hyprland
     xdg-desktop-portal-gtk
     uwsm
@@ -87,6 +89,13 @@ CAELESTIA_RUNTIME=(
     qt6-qt5compat
     adw-gtk3-theme
     papirus-icon-theme
+    # bluetooth (used by shell status bar)
+    bluez
+    bluez-tools
+    # socat (used by hypr scripts)
+    socat
+    # imagemagick (used by caelestia-cli for wallpaper processing)
+    ImageMagick
     playerctl
     jq
     curl
@@ -259,28 +268,36 @@ fc-cache -f "${FONT_DIR}"
 ###############################################################################
 # CAELESTIA DOTS CONFIGS → /etc/skel
 ###############################################################################
-# Clone the main dots repo and install configs into /etc/skel so every new
-# user gets a working setup automatically. Existing users: cp -rn /etc/skel/.config ~/
 log "Installing caelestia dots configs..."
 
+# Clone to the path the install script expects
 git clone --depth=1 \
     https://github.com/caelestia-dots/caelestia.git /usr/share/caelestia-dots
 
+# The caelestia hypr configs use relative source includes — they expect the
+# repo to be at a stable path. We put it in /usr/share/caelestia-dots and
+# copy (not symlink) into skel so users get their own editable copy.
 install -d /etc/skel/.config
+install -d /etc/skel/.local/share
 
-for dir in hypr foot fish fastfetch uwsm btop thunar; do
+# Copy all config dirs into skel
+for dir in hypr foot fish fastfetch uwsm btop thunar micro; do
     if [ -d "/usr/share/caelestia-dots/${dir}" ]; then
         cp -r "/usr/share/caelestia-dots/${dir}" "/etc/skel/.config/${dir}"
     fi
 done
 
+# starship prompt config
 if [ -f /usr/share/caelestia-dots/starship.toml ]; then
     cp /usr/share/caelestia-dots/starship.toml /etc/skel/.config/starship.toml
 fi
 
+# Wallpapers directory
 install -d /etc/skel/Pictures/Wallpapers
 
+# caelestia-specific config dir
 install -d /etc/skel/.config/caelestia
+
 cat > /etc/skel/.config/caelestia/shell.json << 'EOF'
 {
     "general": {
