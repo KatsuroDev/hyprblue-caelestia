@@ -131,8 +131,8 @@ dnf5 install --setopt=install_weak_deps=False --skip-unavailable -y \
     "${CAELESTIA_RUNTIME[@]}" \
     "${BUILD_DEPS[@]}"
 
-# dart-sass via npm (needed by caelestia-cli for Discord theming)
-npm install -g sass
+# dart-sass via npm — set prefix to /usr to avoid broken /usr/local symlink in bootc images
+npm install -g sass --prefix /usr
 
 # starship prompt — not in Fedora standard repos, install from release binary
 curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
