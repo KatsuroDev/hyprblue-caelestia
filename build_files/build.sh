@@ -203,7 +203,7 @@ git clone --depth=1 --branch "${CAELESTIA_CLI_VERSION}" \
 
 cd /tmp/caelestia-cli
 
-pip3 install materialyoucolor --break-system-packages
+pip3 install materialyoucolor --break-system-packages --target /usr/lib/python3/dist-packages
 python3 -m build --wheel --no-isolation
 python3 -m installer --prefix /usr dist/*.whl
 
