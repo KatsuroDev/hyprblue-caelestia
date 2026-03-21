@@ -131,8 +131,8 @@ dnf5 install --setopt=install_weak_deps=False --skip-unavailable -y \
     "${CAELESTIA_RUNTIME[@]}" \
     "${BUILD_DEPS[@]}"
 
-# dart-sass via npm — set prefix to /usr to avoid broken /usr/local symlink in bootc images
-npm install -g sass --prefix /usr
+# dart-sass via npm — redirect home/cache to /tmp to avoid broken symlinks in bootc
+HOME=/tmp npm install -g sass --prefix /usr --cache /tmp/npm-cache
 
 # starship prompt — not in Fedora standard repos, install from release binary
 curl -fsSL https://starship.rs/install.sh | sh -s -- --yes
