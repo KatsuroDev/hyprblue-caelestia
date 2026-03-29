@@ -21,7 +21,7 @@ NERD_FONTS_VERSION="v3.3.0"        # https://github.com/ryanoasis/nerd-fonts/rel
 log "Enabling COPR repos..."
 
 COPR_REPOS=(
-    solopasha/hyprland
+    ashbuk/Hyprland-Fedora
     errornointernet/quickshell
 )
 
