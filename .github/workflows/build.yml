@@ -5,22 +5,20 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - "**.md"
-      - ".gitignore"
+      - refactor/homemade-script
   pull_request:
     branches:
       - main
     paths-ignore:
       - "**.md"
       - ".gitignore"
-  schedule:
-    # Rebuild weekly (Saturday 03:00 UTC) so the base bluefin-dx layer stays fresh
-    - cron: "0 3 * * 6"
+  # schedule:
+  # Rebuild weekly (Saturday 03:00 UTC) so the base bluefin-dx layer stays fresh
+  # - cron: "0 3 * * 6"
   workflow_dispatch:
 
 env:
-  IMAGE_NAME: caelestia-bluefin
+  IMAGE_NAME: caelestia-bluefin-katos
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
   BASE_IMAGE: ghcr.io/ublue-os/bluefin-dx:latest
 
