@@ -39,6 +39,7 @@ DOTS_PKGS=(
     hyprland
     hyprpicker
     hyprland-guiutils
+    xdg-desktop-portal
     xdg-desktop-portal-hyprland
     xdg-desktop-portal-gtk
     inotify-tools
@@ -76,6 +77,15 @@ for repo in "${COPR_REPOS[@]}"; do
 done
 
 log "Build complete!"
+
+###############################################################################
+# FONTS
+###############################################################################
+
+FONT_DIR="/usr/share/fonts/jetbrains"
+install -d "${FONT_DIR}"
+curl -fsSL "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz" | tar xJ -C /usr/share/fonts/jetbrains
+fc-cache -f "${FONT_DIR}"
 
 ###############################################################################
 # CAELESTIA DOTS CONFIGS → /etc/skel
