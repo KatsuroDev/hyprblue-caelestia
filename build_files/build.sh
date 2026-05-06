@@ -61,6 +61,7 @@ DOTS_OPT_PKGS=(
     thunar
     uwsm
     gnome-keyring
+    libsecret
     polkit
 )
 
