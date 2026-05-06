@@ -52,6 +52,7 @@ DOTS_PKGS=(
     eza
     adw-gtk3-theme
     papirus-icon-theme
+    xdg-utils
     # qtengine-git
 )
 
