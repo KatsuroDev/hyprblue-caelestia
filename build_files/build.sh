@@ -39,7 +39,6 @@ DOTS_PKGS=(
     hyprland
     hyprpicker
     hyprland-guiutils
-    xdg-desktop-portal
     xdg-desktop-portal-hyprland
     xdg-desktop-portal-gtk
     inotify-tools
@@ -53,7 +52,6 @@ DOTS_PKGS=(
     eza
     adw-gtk3-theme
     papirus-icon-theme
-    xdg-utils
     # qtengine-git
 )
 
@@ -61,8 +59,8 @@ DOTS_OPT_PKGS=(
     thunar
     uwsm
     gnome-keyring
-    libsecret
     polkit
+    openrgb
 )
 
 
