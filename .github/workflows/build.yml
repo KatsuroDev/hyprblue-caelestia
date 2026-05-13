@@ -44,7 +44,7 @@ jobs:
         with:
           images: ${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || 'ref/heads/refactor/homemade-script' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'ref/heads/refactor/homemade-script' }}
             type=sha,prefix=sha-,format=short
             type=schedule,pattern={{date 'YYYYMMDD'}}
 
