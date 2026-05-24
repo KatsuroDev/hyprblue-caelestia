@@ -61,6 +61,8 @@ DOTS_OPT_PKGS=(
     gnome-keyring
     polkit
     openrgb
+    steam
+    gamescope
 )
 
 
