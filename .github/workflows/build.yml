@@ -9,6 +9,7 @@ on:
   pull_request:
     branches:
       - main
+      - refactor/homemade-script
     paths-ignore:
       - "**.md"
       - ".gitignore"
@@ -67,14 +68,13 @@ jobs:
       - name: Verify image contents
         run: |
           podman run --rm ${{ steps.build.outputs.image-with-tag }} \
-            sh -c '
-              command -v qs && echo "qs ok"
-              command -v caelestia && echo "caelestia ok"
-              command -v hyprland && echo "hyprland ok"
-              command -v uwsm && echo "uwsm ok"
-              test -f /usr/share/quickshell/caelestia/shell.qml && echo "shell.qml ok" || echo "shell.qml MISSING"
-              test -e /usr/lib/qt6/qml/Caelestia/libcaelestiaplugin.so && echo "plugin ok" || echo "plugin MISSING - searching..."
-              find /usr -name "libcaelestiaplugin.so" 2>/dev/null
+            sh -ec '
+              rpm -q caelestia-shell caelestia-cli quickshell-git qt6-qtbase qt6-qtdeclarative
+              command -v caelestia
+              command -v hyprland
+              command -v uwsm
+              test -f /etc/xdg/quickshell/caelestia/shell.qml
+              qs --version
             '
 
       # ── Push (main branch only) ─────────────────────────────────────────────
