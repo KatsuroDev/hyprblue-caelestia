@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -euo pipefail
+
+log() { echo "=== $* ==="; }
+
 ###############################################################################
 # COPR REPOS
 ###############################################################################
@@ -17,7 +21,7 @@ COPR_REPOS=(
 )
 
 for repo in "${COPR_REPOS[@]}"; do
-    dnf -y copr enable "$repo" || true
+    dnf5 -y copr enable "$repo"
 done
 
 ###############################################################################
@@ -66,11 +70,20 @@ DOTS_OPT_PKGS=(
 )
 
 
-dnf5 install --setopt=install_weak_deps=False --skip-unavailable -y \
+dnf5 install --setopt=install_weak_deps=False -y \
     "${CAELESTIA_SHELL_CLI_DEPS[@]}" \
     "${DOTS_PKGS[@]}" \
     "${DOTS_OPT_PKGS[@]}"
 
+
+# COPR Quickshell may require a newer Qt ABI than the base image provides.
+log "Updating Qt runtime packages..."
+dnf5 upgrade --refresh -y 'qt6-*'
+
+# Executing qs catches linker errors that command -v cannot detect.
+log "Checking Quickshell and Qt compatibility..."
+rpm -q quickshell-git qt6-qtbase qt6-qtdeclarative
+qs --version
 
 log "Disabling COPR repos..."
 for repo in "${COPR_REPOS[@]}"; do
