@@ -148,6 +148,37 @@ EXTRA_APP_BIND_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Exec bindings that belonged to the managed legacy dotfiles. Unknown direct
+# exec bindings are reported before the legacy tree is replaced, so local
+# additions cannot disappear silently.
+LEGACY_MANAGED_EXEC_PREFIXES = (
+    "$wsaction ",
+    "caelestia ",
+    "qs -c caelestia ",
+    "app2unit -- $terminal",
+    "app2unit -- $browser",
+    "app2unit -- $editor",
+    "app2unit -- $fileExplorer",
+    "app2unit -- github-desktop",
+    "app2unit -- nemo",
+    "app2unit -- qps",
+    "app2unit -- pavucontrol",
+    "hyprpicker -a",
+    "wpctl ",
+    "systemctl suspend-then-hibernate",
+    "pkill fuzzel || caelestia ",
+    "sleep 0.5s && ydotool ",
+)
+LEGACY_TEST_NOTIFICATION_PREFIX = (
+    "notify-send -u low -i dialog-information-symbolic 'Test notification'"
+)
+SUPPORTED_BIND_FLAGS = {
+    "l": "locked",
+    "e": "repeating",
+    "r": "release",
+    "m": "mouse",
+}
+
 
 def xdg_path(env_name: str, fallback: str) -> Path:
     return Path(os.environ.get(env_name, str(Path.home() / fallback))).expanduser()
@@ -277,6 +308,18 @@ def split_conf_csv(value: str, maxsplit: int | None = None) -> list[str]:
     return [part.strip() for part in value.split(",", maxsplit)]
 
 
+def bind_flags_or_none(key: str, raw: str, report: list[str]) -> list[str] | None:
+    """Return translated flags, or None when a bind suffix has unknown semantics."""
+    suffix = key[4:]
+    unknown = sorted(set(suffix) - set(SUPPORTED_BIND_FLAGS))
+    if unknown:
+        report.append(
+            f"Untranslated hypr-user.conf bind flags {''.join(unknown)!r}: {raw}"
+        )
+        return None
+    return [f"{SUPPORTED_BIND_FLAGS[ch]} = true" for ch in suffix]
+
+
 def convert_user_conf(path: Path, report: list[str]) -> list[str]:
     if not path.is_file():
         return []
@@ -325,13 +368,11 @@ def convert_user_conf(path: Path, report: list[str]) -> list[str]:
         elif key.startswith("bind"):
             parts = split_conf_csv(value, 3)
             if len(parts) == 4 and parts[2].lower() == "exec":
+                flags = bind_flags_or_none(key, raw, report)
+                if flags is None:
+                    converted.append(f"-- TODO legacy: {raw}")
+                    continue
                 bind_key = normalise_keybind(f"{parts[0]}, {parts[1]}")
-                flag_suffix = key[4:]
-                flags = []
-                # Common legacy bind flags. Unknown flags are intentionally not guessed.
-                for ch, flag in (("l", "locked"), ("e", "repeating"), ("r", "release"), ("m", "mouse")):
-                    if ch in flag_suffix:
-                        flags.append(f"{flag} = true")
                 flag_arg = ", { " + ", ".join(flags) + " }" if flags else ""
                 converted.append(
                     f"hl.bind({lua_literal(bind_key)}, hl.dsp.exec_cmd({lua_literal(parts[3])}){flag_arg})"
@@ -345,25 +386,50 @@ def convert_user_conf(path: Path, report: list[str]) -> list[str]:
     return converted
 
 
-def collect_extra_app_binds(keybinds_path: Path, legacy_vars: dict[str, str], report: list[str]) -> list[str]:
+def is_managed_legacy_exec(command: str) -> bool:
+    return command.startswith(LEGACY_MANAGED_EXEC_PREFIXES) or command.startswith(
+        LEGACY_TEST_NOTIFICATION_PREFIX
+    )
+
+
+def collect_legacy_keybinds(
+    keybinds_path: Path, legacy_vars: dict[str, str], report: list[str]
+) -> list[str]:
+    """Migrate known custom app binds and report unknown direct exec binds."""
     if not keybinds_path.is_file():
         return []
 
     migrated: list[str] = []
     for raw in keybinds_path.read_text(encoding="utf-8", errors="replace").splitlines():
+        stripped = raw.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
         match = EXTRA_APP_BIND_RE.match(raw)
-        if not match:
+        if match:
+            var = match.group("var")
+            # Default app bindings are generated from hypr-vars.lua.
+            if var in {"terminal", "browser", "editor", "fileExplorer"}:
+                continue
+            command = legacy_vars.get(var)
+            if not command:
+                report.append(f"Could not migrate bind using unknown variable ${var}: {raw}")
+                continue
+            key = normalise_keybind(f"{match.group('mods')}, {match.group('key')}")
+            migrated.append(f"hl.bind({lua_literal(key)}, hl.dsp.exec_cmd({lua_literal(command)}))")
             continue
-        var = match.group("var")
-        # Default app bindings are already generated from hypr-vars.lua.
-        if var in {"terminal", "browser", "editor", "fileExplorer"}:
+
+        bind_name, sep, value = stripped.partition("=")
+        bind_name = bind_name.strip().lower()
+        if not sep or not bind_name.startswith("bind"):
             continue
-        command = legacy_vars.get(var)
-        if not command:
-            report.append(f"Could not migrate bind using unknown variable ${var}: {raw}")
+        parts = split_conf_csv(value.strip(), 3)
+        if len(parts) != 4 or parts[2].lower() != "exec":
             continue
-        key = normalise_keybind(f"{match.group('mods')}, {match.group('key')}")
-        migrated.append(f"hl.bind({lua_literal(key)}, hl.dsp.exec_cmd({lua_literal(command)}))")
+        command = parts[3]
+        if not is_managed_legacy_exec(command):
+            report.append(f"Legacy direct exec bind not automatically migrated: {raw}")
+
     return migrated
 
 
@@ -429,13 +495,34 @@ def migrate_shell_json(path: Path, report: list[str]) -> bool:
                 node["family"] = material
                 changed = True
 
+        unknown_family = {
+            key: value
+            for key, value in family.items()
+            if key not in {"clock", "sans", "mono", "material"}
+        }
+        if unknown_family:
+            report.append(
+                "Legacy shell font.family settings not translated: "
+                + json.dumps(unknown_family, sort_keys=True, ensure_ascii=False)
+            )
         del font["family"]
         changed = True
 
     size = font.get("size")
-    if isinstance(size, dict) and "scale" in size:
-        if "scale" not in font:
+    if isinstance(size, dict):
+        if "scale" in size and "scale" not in font:
             font["scale"] = size["scale"]
+            changed = True
+
+        unknown_size = {key: value for key, value in size.items() if key != "scale"}
+        if unknown_size:
+            # The original shell.json is already in the timestamped backup. Also
+            # record the exact values here so removing the obsolete `size` object
+            # from the new schema never loses them silently.
+            report.append(
+                "Legacy shell font.size settings not translated: "
+                + json.dumps(unknown_size, sort_keys=True, ensure_ascii=False)
+            )
         del font["size"]
         changed = True
 
@@ -518,7 +605,7 @@ def main() -> int:
     overrides, all_legacy_vars = collect_var_overrides(base_vars, user_vars, report)
     user_statements = convert_user_conf(caelestia_dir / "hypr-user.conf", report)
     user_statements.extend(
-        collect_extra_app_binds(hypr_dir / "hyprland" / "keybinds.conf", all_legacy_vars, report)
+        collect_legacy_keybinds(hypr_dir / "hyprland" / "keybinds.conf", all_legacy_vars, report)
     )
 
     print("Legacy Caelestia config detected.")
