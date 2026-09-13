@@ -101,6 +101,7 @@ jobs:
 
             cat > "$XDG_CONFIG_HOME/hypr/hyprland/keybinds.conf" <<"EOF"
           bind = Super, G, exec, app2unit -- $gituiclient
+          bind = Super, X, exec, notify-send custom-direct-bind
           EOF
 
             cat > "$XDG_CONFIG_HOME/caelestia/hypr-vars.conf" <<"EOF"
@@ -110,6 +111,7 @@ jobs:
             cat > "$XDG_CONFIG_HOME/caelestia/hypr-user.conf" <<"EOF"
           monitor = DP-1, 3840x2160@144, 0x0, 1
           exec-once = openrgb --startminimized
+          bindn = Super, B, exec, notify-send non-consuming
           EOF
 
             cat > "$XDG_CONFIG_HOME/caelestia/shell.json" <<"EOF"
@@ -122,7 +124,7 @@ jobs:
                   "mono": "CaskaydiaCove NF",
                   "sans": "Rubik"
                 },
-                "size": { "scale": 1 }
+                "size": { "scale": 1, "title": 1.15 }
               },
               "transparency": {
                 "enabled": true,
@@ -141,7 +143,14 @@ jobs:
             grep -F "windowOpacity = 0.88" "$XDG_CONFIG_HOME/caelestia/hypr-vars.lua"
             grep -F "flatpak run com.axosoft.GitKraken" "$XDG_CONFIG_HOME/caelestia/hypr-user.lua"
             grep -F "hl.monitor" "$XDG_CONFIG_HOME/caelestia/hypr-user.lua"
+            grep -F -- "-- TODO legacy: bindn = Super, B, exec, notify-send non-consuming" "$XDG_CONFIG_HOME/caelestia/hypr-user.lua"
             test -f "$XDG_CONFIG_HOME/hypr/hyprland.lua"
+
+            report="$(find "$XDG_STATE_HOME/hyprblue-caelestia/backups" -name migration-report.txt -print -quit)"
+            test -n "$report"
+            grep -F "Legacy direct exec bind not automatically migrated: bind = Super, X, exec, notify-send custom-direct-bind" "$report"
+            grep -F "Untranslated hypr-user.conf bind flags 'n': bindn = Super, B, exec, notify-send non-consuming" "$report"
+            grep -F '"title": 1.15' "$report"
 
             python3 - <<"PY"
           import json, os
@@ -151,6 +160,8 @@ jobs:
           font = data["appearance"]["font"]
           tr = data["appearance"]["transparency"]
           assert "family" not in font
+          assert "size" not in font
+          assert font["scale"] == 1
           assert font["clock"] == "Rubik"
           assert font["headline"]["family"] == "Rubik"
           assert font["mono"]["family"] == "CaskaydiaCove NF"
