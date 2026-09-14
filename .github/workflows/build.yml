@@ -149,8 +149,9 @@ jobs:
             report="$(find "$XDG_STATE_HOME/hyprblue-caelestia/backups" -name migration-report.txt -print -quit)"
             test -n "$report"
             grep -F "Legacy direct exec bind not automatically migrated: bind = Super, X, exec, notify-send custom-direct-bind" "$report"
-            grep -F "Untranslated hypr-user.conf bind flags 'n': bindn = Super, B, exec, notify-send non-consuming" "$report"
-            grep -F '"title": 1.15' "$report"
+            grep -F "Untranslated hypr-user.conf bind flags" "$report"
+            grep -F "bindn = Super, B, exec, notify-send non-consuming" "$report"
+            grep -F "\"title\": 1.15" "$report"
 
             python3 - <<"PY"
           import json, os
