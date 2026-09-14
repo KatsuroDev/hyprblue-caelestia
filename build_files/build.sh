@@ -90,6 +90,13 @@ for repo in "${COPR_REPOS[@]}"; do
     dnf5 -y copr disable "$repo" || true
 done
 
+###############################################################################
+# CONFIG MIGRATION HELPER
+###############################################################################
+log "Installing Caelestia config migration helper..."
+install -Dm0755 /ctx/migrate-caelestia-config.py /usr/bin/hyprblue-caelestia-migrate
+hyprblue-caelestia-migrate --help >/dev/null
+
 log "Build complete!"
 
 ###############################################################################
@@ -106,13 +113,13 @@ fc-cache -f "${FONT_DIR}"
 ###############################################################################
 log "Installing caelestia dots configs..."
 
-# Clone to the path the install script expects
+# Clone the current upstream dots. /usr/share is also the source used by the
+# per-user legacy migration helper after an image upgrade.
 git clone --depth=1 \
     https://github.com/caelestia-dots/caelestia.git /usr/share/caelestia-dots
 
-# The caelestia hypr configs use relative source includes — they expect the
-# repo to be at a stable path. We put it in /usr/share/caelestia-dots and
-# copy (not symlink) into skel so users get their own editable copy.
+# /etc/skel only initializes new home directories. Existing users should run
+# hyprblue-caelestia-migrate after an upgrade from the legacy .conf layout.
 install -d /etc/skel/.config
 install -d /etc/skel/.local/share
 

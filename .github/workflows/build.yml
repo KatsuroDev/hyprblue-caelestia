@@ -73,9 +73,102 @@ jobs:
               command -v caelestia
               command -v hyprland
               command -v uwsm
+              command -v hyprblue-caelestia-migrate
               test -f /etc/xdg/quickshell/caelestia/shell.qml
+              test -f /usr/share/caelestia-dots/hypr/hyprland.lua
+              hyprblue-caelestia-migrate --help >/dev/null
               qs --version
             '
+
+      # ── Migration fixture test ──────────────────────────────────────────────
+      - name: Verify legacy config migration
+        run: |
+          podman run --rm ${{ steps.build.outputs.image-with-tag }} sh -ec '
+            export HOME=/tmp/testhome
+            export XDG_CONFIG_HOME="$HOME/.config"
+            export XDG_STATE_HOME="$HOME/.local/state"
+            mkdir -p "$XDG_CONFIG_HOME/hypr/hyprland" "$XDG_CONFIG_HOME/caelestia"
+
+            cat > "$XDG_CONFIG_HOME/hypr/variables.conf" <<"EOF"
+          $terminal = foot
+          $browser = flatpak run app.zen_browser.app
+          $editor = code
+          $fileExplorer = thunar
+          $gituiclient = flatpak run com.axosoft.GitKraken
+          $windowOpacity = 0.95
+          $kbTerminal = Super, T
+          EOF
+
+            cat > "$XDG_CONFIG_HOME/hypr/hyprland/keybinds.conf" <<"EOF"
+          bind = Super, G, exec, app2unit -- $gituiclient
+          bind = Super, X, exec, notify-send custom-direct-bind
+          EOF
+
+            cat > "$XDG_CONFIG_HOME/caelestia/hypr-vars.conf" <<"EOF"
+          $windowOpacity = 0.88
+          EOF
+
+            cat > "$XDG_CONFIG_HOME/caelestia/hypr-user.conf" <<"EOF"
+          monitor = DP-1, 3840x2160@144, 0x0, 1
+          exec-once = openrgb --startminimized
+          bindn = Super, B, exec, notify-send non-consuming
+          EOF
+
+            cat > "$XDG_CONFIG_HOME/caelestia/shell.json" <<"EOF"
+          {
+            "appearance": {
+              "font": {
+                "family": {
+                  "clock": "Rubik",
+                  "material": "Material Symbols Rounded",
+                  "mono": "CaskaydiaCove NF",
+                  "sans": "Rubik"
+                },
+                "size": { "scale": 1, "title": 1.15 }
+              },
+              "transparency": {
+                "enabled": true,
+                "base": 0.72,
+                "layers": 0.33
+              }
+            }
+          }
+          EOF
+
+            hyprblue-caelestia-migrate
+            hyprblue-caelestia-migrate --apply
+
+            grep -F "browser = \"flatpak run app.zen_browser.app\"" "$XDG_CONFIG_HOME/caelestia/hypr-vars.lua"
+            grep -F "editor = \"code\"" "$XDG_CONFIG_HOME/caelestia/hypr-vars.lua"
+            grep -F "windowOpacity = 0.88" "$XDG_CONFIG_HOME/caelestia/hypr-vars.lua"
+            grep -F "flatpak run com.axosoft.GitKraken" "$XDG_CONFIG_HOME/caelestia/hypr-user.lua"
+            grep -F "hl.monitor" "$XDG_CONFIG_HOME/caelestia/hypr-user.lua"
+            grep -F -- "-- TODO legacy: bindn = Super, B, exec, notify-send non-consuming" "$XDG_CONFIG_HOME/caelestia/hypr-user.lua"
+            test -f "$XDG_CONFIG_HOME/hypr/hyprland.lua"
+
+            report="$(find "$XDG_STATE_HOME/hyprblue-caelestia/backups" -name migration-report.txt -print -quit)"
+            test -n "$report"
+            grep -F "Legacy direct exec bind not automatically migrated: bind = Super, X, exec, notify-send custom-direct-bind" "$report"
+            grep -F "Untranslated hypr-user.conf bind flags" "$report"
+            grep -F "bindn = Super, B, exec, notify-send non-consuming" "$report"
+            grep -F "\"title\": 1.15" "$report"
+
+            python3 - <<"PY"
+          import json, os
+          from pathlib import Path
+          p = Path(os.environ["XDG_CONFIG_HOME"]) / "caelestia/shell.json"
+          data = json.loads(p.read_text())
+          font = data["appearance"]["font"]
+          tr = data["appearance"]["transparency"]
+          assert "family" not in font
+          assert "size" not in font
+          assert font["scale"] == 1
+          assert font["clock"] == "Rubik"
+          assert font["headline"]["family"] == "Rubik"
+          assert font["mono"]["family"] == "CaskaydiaCove NF"
+          assert tr == {"enabled": True, "base": 0.72, "layers": 0.33}
+          PY
+          '
 
       # ── Push (main branch only) ─────────────────────────────────────────────
       - name: Log in to GHCR
